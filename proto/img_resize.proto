@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package imgresizer;
+
+service ImgResizer {
+  rpc ProcessImg(ImgUrl) returns (ImgUrl) {}
+}
+
+message ImgUrl {
+  string url = 1;
+}
