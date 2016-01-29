@@ -34,7 +34,7 @@ func main() {
 	}
 
 	nc.Subscribe(">", func(in *imgresizer.ImgUrl) {
-		log.Printf("message: %s \r\n received on subject:", in)
+		log.Printf("message: %s", in)
 		if _, err := resize(in.Url); err != nil {
 			log.Fatalln(err)
 		}
