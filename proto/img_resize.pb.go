@@ -17,11 +17,6 @@ import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
 
-import (
-	context "golang.org/x/net/context"
-	grpc "google.golang.org/grpc"
-)
-
 // Reference imports to suppress errors if they are not otherwise used.
 var _ = proto.Marshal
 var _ = fmt.Errorf
@@ -42,67 +37,6 @@ func (*ImgUrl) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
 
 func init() {
 	proto.RegisterType((*ImgUrl)(nil), "imgresizer.ImgUrl")
-}
-
-// Reference imports to suppress errors if they are not otherwise used.
-var _ context.Context
-var _ grpc.ClientConn
-
-// Client API for ImgResizer service
-
-type ImgResizerClient interface {
-	ProcessImg(ctx context.Context, in *ImgUrl, opts ...grpc.CallOption) (*ImgUrl, error)
-}
-
-type imgResizerClient struct {
-	cc *grpc.ClientConn
-}
-
-func NewImgResizerClient(cc *grpc.ClientConn) ImgResizerClient {
-	return &imgResizerClient{cc}
-}
-
-func (c *imgResizerClient) ProcessImg(ctx context.Context, in *ImgUrl, opts ...grpc.CallOption) (*ImgUrl, error) {
-	out := new(ImgUrl)
-	err := grpc.Invoke(ctx, "/imgresizer.ImgResizer/ProcessImg", in, out, c.cc, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-// Server API for ImgResizer service
-
-type ImgResizerServer interface {
-	ProcessImg(context.Context, *ImgUrl) (*ImgUrl, error)
-}
-
-func RegisterImgResizerServer(s *grpc.Server, srv ImgResizerServer) {
-	s.RegisterService(&_ImgResizer_serviceDesc, srv)
-}
-
-func _ImgResizer_ProcessImg_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error) (interface{}, error) {
-	in := new(ImgUrl)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	out, err := srv.(ImgResizerServer).ProcessImg(ctx, in)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-var _ImgResizer_serviceDesc = grpc.ServiceDesc{
-	ServiceName: "imgresizer.ImgResizer",
-	HandlerType: (*ImgResizerServer)(nil),
-	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "ProcessImg",
-			Handler:    _ImgResizer_ProcessImg_Handler,
-		},
-	},
-	Streams: []grpc.StreamDesc{},
 }
 
 var fileDescriptor0 = []byte{
