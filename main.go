@@ -2,44 +2,39 @@ package main
 
 import (
 	"log"
-	"net"
-
-	"golang.org/x/net/context"
+	"runtime"
 
 	"github.com/disintegration/imaging"
-	pb "github.com/rubencosta/nuances-img-go/proto"
-	"google.golang.org/grpc"
+	"github.com/nats-io/nats"
+	"github.com/nats-io/nats/encoders/protobuf"
+	"github.com/rubencosta/nuances-img-go/proto"
 )
 
-const (
-	port = ":8888"
-)
-
-type server struct{}
-
-func (s *server) ProcessImg(ctx context.Context, in *pb.ImgUrl) (*pb.ImgUrl, error) {
-	log.Printf("received %v", in.Url)
-	img, err := imaging.Open(in.Url)
+func resize(path string, width int, height int) (string, error) {
+	img, err := imaging.Open(path)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	resizedImg := imaging.Resize(img, 400, 400, imaging.Lanczos)
-	newImgPath := in.Url
-	if err := imaging.Save(resizedImg, newImgPath); err != nil {
-		return nil, err
+	resizedImg := imaging.Resize(img, width, height, imaging.Lanczos)
+	if err := imaging.Save(resizedImg, path); err != nil {
+		return "", err
 	}
-	log.Printf("return %v", newImgPath)
-	return &pb.ImgUrl{Url: newImgPath}, nil
+	return path, nil
 }
 
 func main() {
-	list, err := net.Listen("tcp", port)
+	natsc, err := nats.Connect(nats.DefaultURL)
+	nc, _ := nats.NewEncodedConn(natsc, protobuf.PROTOBUF_ENCODER)
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
-	} else {
-		log.Printf("listening on port %v", port)
+		log.Panic(err)
 	}
-	s := grpc.NewServer()
-	pb.RegisterImgResizerServer(s, &server{})
-	s.Serve(list)
+
+	nc.Subscribe("image.resize", func(in *imgresizer.Request) {
+		log.Printf("message: %s", in)
+		if _, err := resize(in.Url, int(in.Width), int(in.Height)); err != nil {
+			log.Fatalln(err)
+		}
+	})
+
+	runtime.Goexit()
 }
