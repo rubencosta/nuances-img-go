@@ -10,20 +10,16 @@ import (
 	"github.com/rubencosta/nuances-img-go/proto"
 )
 
-func resize(path string) (string, error) {
+func resize(path string, width int, height int) (string, error) {
 	img, err := imaging.Open(path)
 	if err != nil {
 		return "", err
 	}
-	resizedImg := imaging.Resize(img, 400, 400, imaging.Lanczos)
+	resizedImg := imaging.Resize(img, width, height, imaging.Lanczos)
 	if err := imaging.Save(resizedImg, path); err != nil {
 		return "", err
 	}
 	return path, nil
-}
-
-type request struct {
-	URL string `json:"url"`
 }
 
 func main() {
@@ -33,9 +29,9 @@ func main() {
 		log.Panic(err)
 	}
 
-	nc.Subscribe(">", func(in *imgresizer.ImgUrl) {
+	nc.Subscribe("image.resize", func(in *imgresizer.Request) {
 		log.Printf("message: %s", in)
-		if _, err := resize(in.Url); err != nil {
+		if _, err := resize(in.Url, int(in.Width), int(in.Height)); err != nil {
 			log.Fatalln(err)
 		}
 	})
